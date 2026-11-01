@@ -76,10 +76,20 @@ def create_attestation(sbom_hash, private_key_file, payload_type='application/vn
         return None
 
     try:
+        # The key file is read whole as text and handed to the signer
+        # as is. There is no passphrase path anywhere in this tool, so
+        # an encrypted PEM cannot be used with it.
         with open(private_key_file, 'r') as f:
             private_key = f.read()
 
         import os as _os
+        # What gets signed is this hand built dict, and its payload
+        # field holds the bare hash string, not the SBOM bytes and not
+        # a base64 envelope. A verifier expecting a standard in-toto
+        # statement will not find one here, whatever the payload type
+        # argument claims. The subject is bound by basename only, so
+        # two different SBOM files with the same name are the same
+        # subject to anything reading this.
         subject_name = _os.path.basename(sbom_file) if sbom_file else 'sbom'
         payload = {
             'payloadType': payload_type,
