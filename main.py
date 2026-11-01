@@ -59,7 +59,7 @@ def calculate_sbom_hash(sbom_file, algorithm='sha256'):
         raise
 
 
-def create_attestation(sbom_hash, private_key_file, payload_type='application/vnd.in-toto+json'):
+def create_attestation(sbom_hash, private_key_file, payload_type='application/vnd.in-toto+json', sbom_file=None, algorithm='sha256'):
     """
     Creates a digital attestation for the SBOM hash using a private key.
 
@@ -79,9 +79,13 @@ def create_attestation(sbom_hash, private_key_file, payload_type='application/vn
         with open(private_key_file, 'r') as f:
             private_key = f.read()
 
+        import os as _os
+        subject_name = _os.path.basename(sbom_file) if sbom_file else 'sbom'
         payload = {
             'payloadType': payload_type,
-            'payload': sbom_hash
+            'payload': sbom_hash,
+            'subject_name': subject_name,
+            'subject_digest': {algorithm: sbom_hash},
         }
 
         # Sign the payload
@@ -137,12 +141,18 @@ def main():
     try:
         validate_input_paths(args.sbom_file, args.private_key_file)
 
+        import os as _os
+        _out = _os.path.realpath(args.output_attestation_file)
+        if _out == _os.path.realpath(args.sbom_file) or _out == _os.path.realpath(args.private_key_file):
+            logging.error("Output path must not equal the SBOM file or the private key file.")
+            sys.exit(1)
+
         # Calculate the SBOM hash
         sbom_hash = calculate_sbom_hash(args.sbom_file, args.algorithm)
         logging.info(f"SBOM hash: {sbom_hash}")
 
         # Create the attestation
-        attestation = create_attestation(sbom_hash, args.private_key_file, args.payload_type)
+        attestation = create_attestation(sbom_hash, args.private_key_file, args.payload_type, sbom_file=args.sbom_file, algorithm=args.algorithm)
 
         if attestation:
             # Save the attestation to a file

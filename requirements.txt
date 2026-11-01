@@ -1,2 +1,1 @@
-requests>=1.0.0
-packaging>=1.0.0
+dsse>=0.1.0
