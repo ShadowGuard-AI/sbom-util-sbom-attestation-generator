@@ -4,18 +4,23 @@ A command-line tool that produces a signed attestation over a named SBOM and its
 The run refuses at exit 1, before any write, when the output path resolves to the same file as the SBOM file or the private key file.
 
 ## Install
-`git clone https://github.com/ShadowStrikeHQ/sbom-util-sbom-attestation-generator`
+`git clone https://github.com/ShadowGuard-AI/sbom-util-sbom-attestation-generator`
 `pip install -r requirements.txt`
 
 The install names `dsse`, the distribution that provides the `dsse` import used in the code.
 
 ## Usage
-`./sbom-util-sbom-attestation-generator [params]`
+`python3 main.py sbom_file private_key_file output_attestation_file [--algorithm sha256|sha512] [--payload-type PAYLOAD_TYPE]`
+
+Example: `python3 main.py sbom.json private.pem attestation.json`
 
 ## Parameters
-- `-h`: Show help message and exit
-- `--algorithm`: No description provided
-- `--payload-type`: No description provided
+- `sbom_file` (required): Path to the SBOM file.
+- `private_key_file` (required): Path to the private key file (PEM format).
+- `output_attestation_file` (required): Path to save the generated attestation file.
+- `-h, --help`: Show help message and exit
+- `--algorithm`: Hashing algorithm to use, choices `sha256` and `sha512` (default: `sha256`)
+- `--payload-type`: Payload type for the attestation (default: `application/vnd.in-toto+json`)
 
 ## License
-Copyright (c) ShadowStrikeHQ
+MIT License. See LICENSE.
